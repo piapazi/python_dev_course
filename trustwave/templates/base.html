@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,8 +14,7 @@
             --secondary-color: #10b981;
             --trust-color: #4f46e5;
             --wave-color: #10b981;
-        }
-        
+        }        
         .wave-text {
             background: linear-gradient(90deg, var(--trust-color), var(--wave-color));
             -webkit-background-clip: text;
@@ -74,14 +72,18 @@
         .status-badge-refused {
             background-color: #ef4444;
         }
-    </style>
+    </style> 
 </head>
 <body>
     <!-- Navigation -->
+    {% if user.is_authenticated %}
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #f59e0b;">
+    {% else %}
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    {% endif %}
         <div class="container">
-            <a class="navbar-brand" href="{% url 'index' %}">
-                <span class="wave-text">Trust Wave</span> Bambili
+            <a class="navbar-brand" href="{% url 'index' %}" style="color: #000 !important;">
+                <span class="wave-text" style="color: #000 !important; background: none !important; -webkit-text-fill-color: #000 !important;">Trust Wave</span> Bambili
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -89,34 +91,34 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'index' %}">Home</a>
+                        <a class="nav-link fw-semibold text-decoration-underline" href="{% url 'index' %}" style="color: #000 !important;">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'alerts' %}">Alerts</a>
+                        <a class="nav-link fw-semibold text-decoration-underline" href="{% url 'alerts' %}" style="color: #000 !important;">Alerts</a>
                     </li>
                     {% if user.is_authenticated %}
                         <li class="nav-item">
                             {% if user.status == 'validated' or user.is_admin %}
-                                <a class="nav-link" href="{% url 'post_alert' %}">Post Alert</a>
+                                <a class="nav-link fw-semibold text-decoration-underline" href="{% url 'post_alert' %}" style="color: #000 !important;">Post Alert</a>
                             {% endif %}
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'profile' %}">Profile</a>
+                            <a class="nav-link fw-semibold text-decoration-underline" href="{% url 'profile' %}" style="color: #000 !important;">Profile</a>
                         </li>
                         {% if user.is_admin %}
                             <li class="nav-item">
-                                <a class="nav-link" href="{% url 'admin_dashboard' %}">Admin</a>
+                                <a class="nav-link fw-semibold text-decoration-underline" href="{% url 'admin_dashboard' %}" style="color: #000 !important;">Admin</a>
                             </li>
                         {% endif %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+                            <a class="nav-link fw-semibold text-decoration-underline" href="{% url 'logout' %}" style="color: #000 !important;">Logout</a>
                         </li>
                     {% else %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'login' %}">Login</a>
+                            <a class="nav-link fw-semibold text-decoration-underline" href="{% url 'login' %}" style="color: #000 !important;">Login</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'register' %}">Register</a>
+                            <a class="nav-link fw-semibold text-decoration-underline" href="{% url 'register' %}" style="color: #000 !important;">Register</a>
                         </li>
                     {% endif %}
                 </ul>

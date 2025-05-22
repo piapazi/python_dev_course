@@ -27,6 +27,7 @@ def index(request):
     context = {
         'recent_alerts': recent_alerts,
         'stats': stats,
+        'alert_count': Alert.objects.count(),  # <-- Add this line
     }
     
     return render(request, 'index.html', context)

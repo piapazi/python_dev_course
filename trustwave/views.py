@@ -8,9 +8,12 @@ from django.db.models import Q
 from django.core.paginator import Paginator
 from .models import CustomUser, Alert, AlertVote, AccountStatus
 from .forms import CustomUserCreationForm, CustomAuthenticationForm, AlertForm
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import update_session_auth_hash
+from .forms import CustomUserChangeForm  # You may need to create this form
 
 def is_admin(user):
-    return user.is_admin
+    return user.is_admin 
 
 def index(request):
     """Home page view"""
@@ -162,6 +165,33 @@ def profile(request):
         'alerts': user_alerts
     }
     return render(request, 'profile.html', context)
+
+@login_required
+def edit_profile(request):
+    """Edit user profile"""
+    if request.method == 'POST':
+        form = CustomUserChangeForm(request.POST, request.FILES, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Profile updated successfully.")
+            return redirect('profile')
+    else:
+        form = CustomUserChangeForm(instance=request.user)
+    return render(request, 'edit_profile.html', {'form': form})
+
+@login_required
+def change_password(request):
+    """Change user password"""
+    if request.method == 'POST':
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)  # Important!
+            messages.success(request, "Your password was successfully updated!")
+            return redirect('profile')
+    else:
+        form = PasswordChangeForm(request.user)
+    return render(request, 'change_password.html', {'form': form})
 
 @login_required
 def vote_alert(request):

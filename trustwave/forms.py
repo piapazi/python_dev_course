@@ -48,3 +48,8 @@ class AlertForm(forms.ModelForm):
             field.widget.attrs['class'] = 'form-control'
             if field_name == 'description':
                 field.widget.attrs['rows'] = '4'
+                
+class CustomUserChangeForm(forms.ModelForm):
+    class Meta:
+        model = CustomUser
+        fields = ['full_name', 'email', 'phone_number', 'profession', 'location', 'id_card', 'supporting_doc']

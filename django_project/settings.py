@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     'trustwave.apps.TrustwaveConfig',
     # Third party apps
     'axes',  # For brute force protection
+    "widget_tweaks",
 ]
 
 MIDDLEWARE = [
@@ -150,3 +151,6 @@ USE_TZ = True
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Login URL
+LOGIN_URL = '/login/'

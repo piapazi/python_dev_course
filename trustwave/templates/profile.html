@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - Trust Wave Bambili{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Profile Menu -->
+            <ul class="nav nav-tabs mb-4">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'profile' %}active{% endif %}" href="{% url 'profile' %}">Profile</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'edit_profile' %}active{% endif %}" href="{% url 'edit_profile' %}">Edit Profile</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'change_password' %}active{% endif %}" href="{% url 'change_password' %}">Change Password</a>
+                </li>
+            </ul>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h2 class="mb-3">My Profile</h2>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong>Full Name:</strong>
+                            <div>{{ user.full_name }}</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Email:</strong>
+                            <div>{{ user.email }}</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Phone Number:</strong>
+                            <div>{{ user.phone_number }}</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Profession:</strong>
+                            <div>{{ user.profession|title }}</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Location:</strong>
+                            <div>{{ user.location }}</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Status:</strong>
+                            <span class="badge 
+                                {% if user.status == 'validated' %}status-badge-validated
+                                {% elif user.status == 'pending' %}status-badge-pending
+                                {% else %}status-badge-refused{% endif %}">
+                                {{ user.get_status_display }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h3 class="mb-4">My Alerts</h3>
+                    {% if alerts %}
+                        <div class="list-group">
+                            {% for alert in alerts %}
+                                <a href="{% url 'alerts' %}#alert-{{ alert.id }}" class="list-group-item list-group-item-action d-flex gap-3 py-3 align-items-center">
+                                    <div class="d-flex gap-2 w-100 justify-content-between">
+                                        <div>
+                                            <h6 class="mb-0">{{ alert.title }}</h6>
+                                            <p class="mb-0 opacity-75">{{ alert.location }}</p>
+                                        </div>
+                                        <small class="opacity-50 text-nowrap">{{ alert.created_at|timesince }} ago</small>
+                                    </div>
+                                    <span class="badge {% if alert.urgency == 'high' %}bg-danger{% elif alert.urgency == 'medium' %}bg-warning{% else %}bg-success{% endif %}">{{ alert.urgency|title }}</span>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center p-4">
+                            <p class="mb-0 text-muted">You have not posted any alerts yet.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

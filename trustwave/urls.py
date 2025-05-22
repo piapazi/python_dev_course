@@ -1,4 +1,3 @@
-
 from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
@@ -16,6 +15,8 @@ urlpatterns = [
     # Authenticated views
     path('post-alert/', views.post_alert, name='post_alert'),
     path('profile/', views.profile, name='profile'),
+    path('profile/edit/', views.edit_profile, name='edit_profile'),
+    path('profile/change-password/', views.change_password, name='change_password'),
     path('vote-alert/', views.vote_alert, name='vote_alert'),
     
     # Admin views

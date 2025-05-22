@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.http import JsonResponse
 from django.db import IntegrityError
+from django.db.models import Q
 from django.core.paginator import Paginator
 from .models import CustomUser, Alert, AlertVote, AccountStatus
 from .forms import CustomUserCreationForm, CustomAuthenticationForm, AlertForm
@@ -26,6 +27,7 @@ def index(request):
     context = {
         'recent_alerts': recent_alerts,
         'stats': stats,
+        'alert_count': Alert.objects.count(),  # <-- Add this line
     }
     
     return render(request, 'index.html', context)
@@ -78,7 +80,7 @@ def logout_view(request):
     """Logout view"""
     logout(request)
     messages.success(request, "You have been logged out.")
-    return redirect('index')
+    return redirect('login')
 
 def alerts(request):
     """View all alerts"""
@@ -89,7 +91,7 @@ def alerts(request):
     category = request.GET.get('category', 'all')
     sort_by = request.GET.get('sort_by', 'date')
     search = request.GET.get('search', '')
-    
+
     # Apply filters
     if urgency != 'all':
         all_alerts = all_alerts.filter(urgency=urgency)
@@ -98,12 +100,14 @@ def alerts(request):
         all_alerts = all_alerts.filter(category=category)
         
     if search:
-        all_alerts = all_alerts.filter(title_icontains=search) | all_alerts.filter(descriptionicontains=search) | all_alerts.filter(location_icontains=search)
-    
+        all_alerts = all_alerts.filter(
+            Q(title__icontains=search) |
+            Q(description__icontains=search) |
+            Q(location__icontains=search)
+        )
+
     # Apply sorting
     if sort_by == 'votes':
-        # This requires an annotation, but for simplicity we'll handle in Python
-        # In a real app, you'd use Django ORM's annotation feature
         all_alerts = sorted(all_alerts, key=lambda a: a.votes, reverse=True)
     elif sort_by == 'urgency':
         urgency_weights = {'high': 3, 'medium': 2, 'low': 1}

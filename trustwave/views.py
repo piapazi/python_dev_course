@@ -78,7 +78,7 @@ def logout_view(request):
     """Logout view"""
     logout(request)
     messages.success(request, "You have been logged out.")
-    return redirect('index')
+    return redirect('login')
 
 def alerts(request):
     """View all alerts"""

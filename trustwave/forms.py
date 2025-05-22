@@ -1,4 +1,3 @@
-
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.core.exceptions import ValidationError
@@ -7,7 +6,7 @@ from .models import CustomUser, Alert
 class CustomUserCreationForm(UserCreationForm):
     class Meta:
         model = CustomUser
-        fields = ['full_name', 'email', 'phone_number', 'profession', 'location', 'id_card', 'supporting_doc']
+        fields = ['full_name', 'email', 'phone_number', 'profession', 'location', 'id_card', 'supporting_doc', 'password1', 'password2']
         
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -42,8 +41,8 @@ class AlertForm(forms.ModelForm):
         model = Alert
         fields = ['title', 'description', 'location', 'urgency', 'category', 'image']
         
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def _init_(self, *args, **kwargs):
+        super()._init_(*args, **kwargs)
         # Add Bootstrap classes
         for field_name, field in self.fields.items():
             field.widget.attrs['class'] = 'form-control'

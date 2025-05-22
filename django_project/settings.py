@@ -1,5 +1,5 @@
 """
-Django settings for django_project project.
+Django settings for Trust Wave Bambili project.
 """
 
 import os
@@ -14,6 +14,7 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-placeholder-ke
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
+
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
@@ -49,7 +50,7 @@ ROOT_URLCONF = 'django_project.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -66,8 +67,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'django_project.wsgi.application'
 
 # Database
-# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -111,14 +110,14 @@ AXES_LOCKOUT_TIME = 1  # Lockout time in hours
 AXES_RESET_ON_SUCCESS = True  # Reset the number of failed attempts on success
 
 # Session Security Settings
-SESSION_COOKIE_SECURE = True  # Send cookies only via HTTPS
+SESSION_COOKIE_SECURE = not DEBUG  # Send cookies only via HTTPS in production
 SESSION_COOKIE_HTTPONLY = True  # Prevent JavaScript access to session cookie
 SESSION_COOKIE_SAMESITE = 'Lax'  # Controls when cookies are sent with requests from external sites
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Session expires when browser is closed
 SESSION_COOKIE_AGE = 3600  # Session timeout in seconds: 1 hour
 
 # CSRF Protection
-CSRF_COOKIE_SECURE = True  # Send CSRF cookie only via HTTPS
+CSRF_COOKIE_SECURE = not DEBUG  # Send CSRF cookie only via HTTPS in production
 CSRF_COOKIE_HTTPONLY = True  # Prevent JavaScript access to CSRF cookie
 CSRF_COOKIE_SAMESITE = 'Lax'  # Controls when cookies are sent
 
@@ -126,10 +125,13 @@ CSRF_COOKIE_SAMESITE = 'Lax'  # Controls when cookies are sent
 SECURE_BROWSER_XSS_FILTER = True  # Enable browser's XSS filtering protection
 SECURE_CONTENT_TYPE_NOSNIFF = True  # Prevent browser from guessing content types
 X_FRAME_OPTIONS = 'DENY'  # Prevent site from being embedded in frames/iframes
-SECURE_HSTS_SECONDS = 31536000  # Enable HTTP Strict Transport Security: 1 year
-SECURE_HSTS_INCLUDE_SUBDOMAINS = True  # Apply HSTS to subdomains
-SECURE_HSTS_PRELOAD = True  # Allow site to be included in browser HSTS preload list
-SECURE_SSL_REDIRECT = False  # For development - set to True in production
+
+# Only enable these in production
+if not DEBUG:
+    SECURE_HSTS_SECONDS = 31536000  # Enable HTTP Strict Transport Security: 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True  # Apply HSTS to subdomains
+    SECURE_HSTS_PRELOAD = True  # Allow site to be included in browser HSTS preload list
+    SECURE_SSL_REDIRECT = True  # Redirect HTTP to HTTPS
 
 # Media files
 MEDIA_URL = '/media/'
@@ -137,7 +139,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Static files
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Internationalization
@@ -148,9 +150,3 @@ USE_TZ = True
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# Turn off some security settings for local development
-if DEBUG:
-    SESSION_COOKIE_SECURE = False
-    CSRF_COOKIE_SECURE = False
-    SECURE_SSL_REDIRECT = False

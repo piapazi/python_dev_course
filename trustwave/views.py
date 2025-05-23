@@ -11,6 +11,8 @@ from .forms import CustomUserCreationForm, CustomAuthenticationForm, AlertForm
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 from .forms import CustomUserChangeForm  # You may need to create this form
+import re
+from django.utils.html import strip_tags
 
 def is_admin(user):
     return user.is_admin 
@@ -42,8 +44,46 @@ def register(request):
         
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST, request.FILES)
+        phone_number = request.POST.get('phone_number', '')
+        full_name = request.POST.get('full_name', '')
+        email = request.POST.get('email', '')
+        profession = request.POST.get('profession', '')
+        id_card = request.FILES.get('id_card')
+        supporting_doc = request.FILES.get('supporting_doc')
+
+        # Phone number: must be 9 digits, numbers only
+        if not phone_number.isdigit() or len(phone_number) != 9:
+            form.add_error('phone_number', 'Phone number must be exactly 9 digits and contain only numbers.')
+
+        # Full name: max 100 chars, alphabetic only (allow spaces, hyphens, apostrophes)
+        if not re.fullmatch(r"[A-Za-zÀ-ÿ\s\-']{1,100}", full_name):
+            form.add_error('full_name', 'Name must be alphabetic and up to 100 characters.')
+
+        # Email: must be valid (Django form usually checks this, but double-check)
+        if not re.fullmatch(r"[^@]+@[^@]+\.[^@]+", email):
+            form.add_error('email', 'Enter a valid email address.')
+
+        # Profession: must be selected (not empty)
+        if not profession:
+            form.add_error('profession', 'Please select your profession.')
+
+        # ID Card: must be PNG or JPEG
+        if id_card:
+            if not id_card.content_type in ['image/png', 'image/jpeg']:
+                form.add_error('id_card', 'ID Card must be a PNG or JPEG image.')
+
+        # Supporting Doc: must be PDF (if provided)
+        if supporting_doc:
+            if not supporting_doc.content_type == 'application/pdf':
+                form.add_error('supporting_doc', 'Supporting document must be a PDF file.')
+
         if form.is_valid():
-            user = form.save()
+            user = form.save(commit=False)
+            user.phone_number = phone_number
+            user.full_name = full_name
+            user.email = email
+            user.profession = profession
+            user.save()
             messages.success(request, "Registration successful. Your account is pending approval.")
             return redirect('registration_pending')
     else:
@@ -62,9 +102,18 @@ def login_view(request):
         
     if request.method == 'POST':
         form = CustomAuthenticationForm(request, data=request.POST)
+        email = request.POST.get('username', '').strip()
+        password = request.POST.get('password', '')
+
+        # Email validation
+        if not re.fullmatch(r"[^@]+@[^@]+\.[^@]+", email):
+            form.add_error('username', 'Enter a valid email address.')
+
+        # Password validation (required, max length 128)
+        if not password or len(password) > 128:
+            form.add_error('password', 'Enter your password (max 128 characters).')
+
         if form.is_valid():
-            email = form.cleaned_data.get('username')
-            password = form.cleaned_data.get('password')
             user = authenticate(request, username=email, password=password)
             if user is not None:
                 login(request, user)
@@ -73,6 +122,8 @@ def login_view(request):
                     messages.warning(request, "Your account is pending approval.")
                     return redirect('registration_pending')
                 return redirect('index')
+            else:
+                form.add_error(None, "Invalid email or password.")
     else:
         form = CustomAuthenticationForm()
     
@@ -145,9 +196,39 @@ def post_alert(request):
     
     if request.method == 'POST':
         form = AlertForm(request.POST, request.FILES)
+        title = request.POST.get('title', '').strip()
+        location = request.POST.get('location', '').strip()
+        description = request.POST.get('description', '').strip()
+        image = request.FILES.get('image')
+
+        # Sanitize text fields to prevent code injection
+        title = strip_tags(title)
+        location = strip_tags(location)
+        description = strip_tags(description)
+
+        # Title: max 100 chars, allowed chars only
+        if not re.fullmatch(r"[A-Za-z0-9À-ÿ\s\-',.!?()]{1,100}", title):
+            form.add_error('title', 'Title must be up to 100 characters and contain only letters, numbers, and basic punctuation.')
+
+        # Location: max 100 chars, allowed chars only
+        if not re.fullmatch(r"[A-Za-z0-9À-ÿ\s\-',.]{1,100}", location):
+            form.add_error('location', 'Location must be up to 100 characters and contain only letters, numbers, and basic punctuation.')
+
+        # Description: max 2000 chars
+        if len(description) > 2000:
+            form.add_error('description', 'Description must be 2000 characters or less.')
+
+        # Image: must be PNG or JPEG if provided
+        if image:
+            if not image.content_type in ['image/png', 'image/jpeg']:
+                form.add_error('image', 'Image must be a PNG or JPEG file.')
+
         if form.is_valid():
             alert = form.save(commit=False)
             alert.user = request.user
+            alert.title = title
+            alert.location = location
+            alert.description = description
             alert.save()
             messages.success(request, "Alert posted successfully.")
             return redirect('alerts')
@@ -171,8 +252,48 @@ def edit_profile(request):
     """Edit user profile"""
     if request.method == 'POST':
         form = CustomUserChangeForm(request.POST, request.FILES, instance=request.user)
+        # Manual validation and sanitization
+        full_name = request.POST.get('full_name', '').strip()
+        email = request.POST.get('email', '').strip()
+        phone_number = request.POST.get('phone_number', '').strip()
+        profession = request.POST.get('profession', '')
+        location = request.POST.get('location', '').strip()
+
+        import re
+        from django.utils.html import strip_tags
+
+        # Sanitize text fields
+        full_name = strip_tags(full_name)
+        location = strip_tags(location)
+
+        # Full name: max 100 chars, alphabetic only
+        if not re.fullmatch(r"[A-Za-zÀ-ÿ\s\-']{1,100}", full_name):
+            form.add_error('full_name', 'Name must be alphabetic and up to 100 characters.')
+
+        # Email: must be valid
+        if not re.fullmatch(r"[^@]+@[^@]+\.[^@]+", email):
+            form.add_error('email', 'Enter a valid email address.')
+
+        # Phone number: must be 9 digits, numbers only
+        if not phone_number.isdigit() or len(phone_number) != 9:
+            form.add_error('phone_number', 'Phone number must be exactly 9 digits and contain only numbers.')
+
+        # Profession: must be selected
+        if not profession:
+            form.add_error('profession', 'Please select your profession.')
+
+        # Location: max 100 chars, allowed chars only
+        if not re.fullmatch(r"[A-Za-z0-9À-ÿ\s\-',.]{1,100}", location):
+            form.add_error('location', 'Location must be up to 100 characters and contain only letters, numbers, and basic punctuation.')
+
         if form.is_valid():
-            form.save()
+            user = form.save(commit=False)
+            user.full_name = full_name
+            user.email = email
+            user.phone_number = phone_number
+            user.profession = profession
+            user.location = location
+            user.save()
             messages.success(request, "Profile updated successfully.")
             return redirect('profile')
     else:

@@ -55,9 +55,11 @@ def register(request):
         if not phone_number.isdigit() or len(phone_number) != 9:
             form.add_error('phone_number', 'Phone number must be exactly 9 digits and contain only numbers.')
 
-        # Full name: max 100 chars, alphabetic only (allow spaces, hyphens, apostrophes)
-        if not re.fullmatch(r"[A-Za-zÀ-ÿ\s\-']{1,100}", full_name):
-            form.add_error('full_name', 'Name must be alphabetic and up to 100 characters.')
+        # Full name: 4-100 chars, alphabetic only (allow spaces, hyphens, apostrophes), must have at least a first name
+        if not re.fullmatch(r"[A-Za-zÀ-ÿ\s\-']{4,100}", full_name):
+            form.add_error('full_name', 'Name must be alphabetic and between 4 and 100 characters.')
+        elif len(full_name.strip().split()) < 1:
+            form.add_error('full_name', 'Please provide at least a first name.')
 
         # Email: must be valid (Django form usually checks this, but double-check)
         if not re.fullmatch(r"[^@]+@[^@]+\.[^@]+", email):
@@ -266,9 +268,11 @@ def edit_profile(request):
         full_name = strip_tags(full_name)
         location = strip_tags(location)
 
-        # Full name: max 100 chars, alphabetic only
-        if not re.fullmatch(r"[A-Za-zÀ-ÿ\s\-']{1,100}", full_name):
-            form.add_error('full_name', 'Name must be alphabetic and up to 100 characters.')
+        # Full name: 4-100 chars, alphabetic only (allow spaces, hyphens, apostrophes), must have at least a first name
+        if not re.fullmatch(r"[A-Za-zÀ-ÿ\s\-']{4,100}", full_name):
+            form.add_error('full_name', 'Name must be alphabetic and between 4 and 100 characters.')
+        elif len(full_name.strip().split()) < 1:
+            form.add_error('full_name', 'Please provide at least a first name.')
 
         # Email: must be valid
         if not re.fullmatch(r"[^@]+@[^@]+\.[^@]+", email):
